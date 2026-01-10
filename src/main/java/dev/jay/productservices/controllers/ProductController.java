@@ -5,6 +5,9 @@ import dev.jay.productservices.dtos.UpdateProductRequestDto;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import dev.jay.productservices.services.ProductService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,8 +44,13 @@ public class ProductController {
 
 
     @GetMapping("/products")
-    public List<Product> getProducts() {
-        return productService.getProducts();
+    public ResponseEntity<List<Product>> getProducts() {
+
+        List<Product> products = productService.getProducts();
+//        Manually changing the 200 response to show it as 404 by using ResponseEntity
+        ResponseEntity<List<Product>> response= new ResponseEntity<>(products, HttpStatus.NOT_FOUND);
+
+        return response;
     }
 
 

@@ -4,6 +4,8 @@ import dev.jay.productservices.dtos.FakeStoreProductDto;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,11 +23,20 @@ public class FakeStoreProductService implements ProductService{
 
     @Override
     public Product getSingleProduct(Long productId) {
-
-        FakeStoreProductDto fakeStoreProduct = restTemplate.getForObject(
+//        getForObject only brings the body of the server response
+//        getForEntity will bring all the data that the server sends like Status Code cookies value and all
+        ResponseEntity<FakeStoreProductDto> fakeStoreProductResponse = restTemplate.getForEntity(
                 "https://fakestoreapi.com/products/" + productId,
                 FakeStoreProductDto.class
         );
+
+        if (fakeStoreProductResponse.getStatusCode() != HttpStatusCode.valueOf(200)) {
+
+        }
+//        fakeStoreProductResponse.getHeaders().   //We can do multiple things if we do getForEntity
+
+        FakeStoreProductDto fakeStoreProduct = fakeStoreProductResponse.getBody();
+
         return fakeStoreProduct.toProduct();
     }
 
