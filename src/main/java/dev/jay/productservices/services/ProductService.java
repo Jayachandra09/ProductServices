@@ -1,0 +1,35 @@
+package dev.jay.productservices.services;
+
+import dev.jay.productservices.dtos.CreateProductRequestDto;
+import dev.jay.productservices.models.Category;
+import dev.jay.productservices.models.Product;
+
+import java.util.List;
+
+public interface ProductService {
+
+    Product getSingleProduct(Long productId);
+
+    List<Product> getProducts();
+
+    List<Category> getCategories();
+
+    Product createProduct(String title,
+                          String description,
+                          double price,
+                          String category,
+                          String image
+    );
+
+    Product deleteProduct(Long productId);
+
+    Product updateProduct(Long productId,
+                          String title,
+                          String description,
+                          double price,
+                          String category,
+                          String image
+    );
+
+    List<Product> getProductByCategory(String category);
+}
