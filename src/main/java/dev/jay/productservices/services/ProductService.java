@@ -1,6 +1,7 @@
 package dev.jay.productservices.services;
 
 import dev.jay.productservices.dtos.CreateProductRequestDto;
+import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface ProductService {
 
-    Product getSingleProduct(Long productId);
+    Product getSingleProduct(Long productId) throws ProductNotFoundException;
 
     List<Product> getProducts();
 

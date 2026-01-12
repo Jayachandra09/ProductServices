@@ -1,6 +1,7 @@
 package dev.jay.productservices.services;
 
 import dev.jay.productservices.dtos.FakeStoreProductDto;
+import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import org.springframework.http.HttpMethod;
@@ -22,7 +23,7 @@ public class FakeStoreProductService implements ProductService{
     }
 
     @Override
-    public Product getSingleProduct(Long productId) {
+    public Product getSingleProduct(Long productId) throws ProductNotFoundException {
 //        getForObject only brings the body of the server response
 //        getForEntity will bring all the data that the server sends like Status Code cookies value and all
         ResponseEntity<FakeStoreProductDto> fakeStoreProductResponse = restTemplate.getForEntity(
@@ -30,12 +31,16 @@ public class FakeStoreProductService implements ProductService{
                 FakeStoreProductDto.class
         );
 
-        if (fakeStoreProductResponse.getStatusCode() != HttpStatusCode.valueOf(200)) {
-
-        }
+//        if (fakeStoreProductResponse.getStatusCode() != HttpStatusCode.valueOf(200)) {
+//
+//        }
 //        fakeStoreProductResponse.getHeaders().   //We can do multiple things if we do getForEntity
 
         FakeStoreProductDto fakeStoreProduct = fakeStoreProductResponse.getBody();
+
+        if (fakeStoreProduct == null) {
+            throw new ProductNotFoundException("Product with Id : " + productId + " doesn't exsit. Retry some other product");
+        }
 
         return fakeStoreProduct.toProduct();
     }
