@@ -7,6 +7,7 @@ import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import dev.jay.productservices.services.ProductService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class ProductController {
 
     private RestTemplate restTemplate;
 
-    public ProductController(ProductService productService,
+    public ProductController(@Qualifier("selfProductService") ProductService productService,
                              RestTemplate restTemplate) {
         this.productService = productService;
         this.restTemplate = restTemplate;
