@@ -23,4 +23,5 @@ public class Product extends BaseModel{
 //    If that category does not exist in category table it will throw to user to add a category first and then product
     @ManyToOne(cascade = {CascadeType.PERSIST})
     private Category category;
+
 }

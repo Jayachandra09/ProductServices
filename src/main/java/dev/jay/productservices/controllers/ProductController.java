@@ -53,8 +53,8 @@ public class ProductController {
 
 //        Manually throwing error
 //        throw new RuntimeException();
-//        Manually changing the 200 response to show it as 404 by using ResponseEntity
-        ResponseEntity<List<Product>> response= new ResponseEntity<>(products, HttpStatus.NOT_FOUND);
+//         HttpStatus.NOT_FOUND -> Manually changing the 200 response to show it as 404 by using ResponseEntity
+        ResponseEntity<List<Product>> response= new ResponseEntity<>(products, HttpStatus.OK);
 
         return response;
     }

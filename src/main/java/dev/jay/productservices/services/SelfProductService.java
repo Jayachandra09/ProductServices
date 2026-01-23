@@ -23,17 +23,17 @@ public class SelfProductService implements ProductService{
 
     @Override
     public Product getSingleProduct(Long productId) throws ProductNotFoundException {
-        return null;
+        return productRepository.findByIdEquals(productId);
     }
 
     @Override
     public List<Product> getProducts() {
-        return null;
+        return productRepository.findAll();
     }
 
     @Override
     public List<Category> getCategories() {
-        return null;
+        return categoryRepository.findAll();
     }
 
     @Override
@@ -64,16 +64,52 @@ public class SelfProductService implements ProductService{
 
     @Override
     public Product deleteProduct(Long productId) {
-        return null;
+        Product product = productRepository.findByIdEquals(productId);
+
+        productRepository.delete(product);
+        return product;
     }
 
     @Override
     public Product updateProduct(Long productId, String title, String description, double price, String category, String image) {
-        return null;
+
+        Product product = productRepository.findByIdEquals(productId);
+
+        if (title != null) {
+            product.setTitle(title);
+        }
+        if (description != null) {
+            product.setDescription(description);
+        }
+        if (price >= 0) {
+            product.setPrice(price);
+        }
+        if (category != null) {
+            Category categoryFromDatabase = categoryRepository.findByTitle(category);
+            if (categoryFromDatabase == null) {
+                Category newCategory = new Category();
+                newCategory.setTitle(category);
+                categoryFromDatabase = newCategory;
+            }
+            product.setCategory(categoryFromDatabase);
+        }
+
+        if (image != null) {
+            product.setImageUrl(image);
+        }
+
+        Product updatedProduct = productRepository.save(product);
+        return updatedProduct;
     }
 
     @Override
-    public List<Product> getProductByCategory(String category) {
-        return null;
+    public List<Product> getProductByCategory(String categoryTitle) {
+        Category category = categoryRepository.findByTitle(categoryTitle);
+
+        if (category == null) {
+            return List.of();
+        }
+//        Long categoryId = category.getId();
+        return productRepository.findAllByCategory(category);
     }
 }
