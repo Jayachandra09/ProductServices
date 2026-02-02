@@ -4,6 +4,7 @@ import dev.jay.productservices.dtos.FakeStoreProductDto;
 import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -166,5 +167,12 @@ public class FakeStoreProductService implements ProductService{
             products.add(categoryProduct.toProduct());
         }
         return products;
+    }
+
+
+//    For Pagination and Sorting
+    @Override
+    public Page<Product> getProductByPagination(Integer pageSize, Integer pageNumber, String sort) {
+        return null;
     }
 }

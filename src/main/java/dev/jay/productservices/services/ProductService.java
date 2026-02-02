@@ -4,6 +4,7 @@ import dev.jay.productservices.dtos.CreateProductRequestDto;
 import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -33,4 +34,6 @@ public interface ProductService {
     );
 
     List<Product> getProductByCategory(String category);
+
+    Page<Product> getProductByPagination(Integer pageSize, Integer pageNumber, String sort);
 }

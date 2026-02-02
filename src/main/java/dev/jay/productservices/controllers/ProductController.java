@@ -8,6 +8,7 @@ import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import dev.jay.productservices.services.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -106,4 +107,26 @@ public class ProductController {
 //        return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
 //    }
 //    For Best practices we are creating advices moving code to there
+
+
+
+//    -----------------------------
+//    Pagination and Sorting
+//    _______________________________
+    @GetMapping("/products/{pageSize}/{pageNumber}")
+    public ResponseEntity getProductsByPage(@PathVariable("pageSize") int pageSize,
+                                            @PathVariable("pageNumber") int pageNumber) {
+
+        Page<Product> productsByPage = productService.getProductByPagination(pageSize, pageNumber, null);
+        return ResponseEntity.ok(productsByPage.getContent());
+    }
+
+
+    @GetMapping("/productsByPrice/{pageSize}/{pageNumber}")
+    public ResponseEntity getProductsByPageSortByPrice(@PathVariable("pageSize") int pageSize,
+                                            @PathVariable("pageNumber") int pageNumber) {
+
+        Page<Product> productsByPageSortByPrice = productService.getProductByPagination(pageSize, pageNumber, "price");
+        return ResponseEntity.ok(productsByPageSortByPrice.getContent());
+    }
 }

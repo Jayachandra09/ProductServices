@@ -5,6 +5,10 @@ import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import dev.jay.productservices.repositories.CategoryRepository;
 import dev.jay.productservices.repositories.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -111,5 +115,29 @@ public class SelfProductService implements ProductService{
         }
 //        Long categoryId = category.getId();
         return productRepository.findAllByCategory(category);
+    }
+
+
+//    For Pagination and Sorting
+
+    /***
+     *
+     * @param pageSize  -> Number of Items in a page
+     * @param pageNumber -> Page number based on the number of items, 0 index based
+     * @param sort -> column name in string
+     * @return
+     */
+
+    public Page<Product> getProductByPagination(Integer pageSize, Integer pageNumber, String sort) {
+        Pageable pageable = null;
+
+        if(sort != null) {
+//            pagination with some kind of sorting
+            pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, sort);
+        } else {
+//            Pagination without sorting
+            pageable = PageRequest.of(pageNumber, pageSize);
+        }
+        return productRepository.findAll(pageable);
     }
 }
