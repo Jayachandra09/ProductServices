@@ -2,7 +2,11 @@ package dev.jay.productservices.repositories;
 
 import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
+import dev.jay.productservices.repositories.projections.ProductProjection;
+import dev.jay.productservices.repositories.projections.ProductWithIdAndTitle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -66,4 +70,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * (i.e., fetched from the database before deletion).
      */
 //    Product delete(Product product);
+
+
+//    Instead of doing 2 queries by using _ we can define the attributes in that entity
+    List<Product> findAllByCategory_IdEquals(Long categoryId);
+
+
+//    HQL Queries
+
+    @Query("select p from Product p where p.category.title = :categoryName and p.id = :productId")
+    Product productWithSpecificCategoryName(@Param("categoryName") String categoryName,
+                                            @Param("productId") Long productId);
+
+    @Query("select p.id as id, p.title as title from Product p where p.category.id = :categoryId")
+    List<ProductProjection> getTitlesOfProductForGivenCategory(@Param("categoryId") Long categoryId);
 }

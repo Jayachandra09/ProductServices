@@ -21,7 +21,10 @@ public class Product extends BaseModel{
 
 //    CascadeType.PERSIST is used for when a person is adding a product with a category id
 //    If that category does not exist in category table it will throw to user to add a category first and then product
-    @ManyToOne(cascade = {CascadeType.PERSIST})
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
+//    For Version management of DB I'm adding this
+//    private int quantity;
 }

@@ -21,7 +21,9 @@ public class Category extends BaseModel {
     private String title;
 
 //    REMOVE used if a person deletes the category it will also the delete the products related to it.
-    @OneToMany(mappedBy = "category", cascade = {CascadeType.REMOVE})
+//    by default for OneToMany fetch type will be lazy this means no join will be executed until unless we trigger it to execute.
+//    I'm making it to eager fetch type from JPA Buddy
+    @OneToMany(fetch = jakarta.persistence.FetchType.EAGER, mappedBy = "category", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Product> products;
 }
