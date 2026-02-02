@@ -24,7 +24,7 @@ public class DataLoader {
 
             if (categoryRepository.count() > 0) return;
 
-            System.out.println("🚀 Seeding database with sample products...");
+            System.out.println("Seeding database with sample products...");
 
             List<String> categoryNames = List.of(
                     "Electronics", "Clothing", "Books", "Home",
@@ -33,14 +33,14 @@ public class DataLoader {
 
             Map<String, Category> categoryMap = new HashMap<>();
 
-            // ✅ Save categories first and FLUSH
+            // Save categories first and FLUSH
             for (String name : categoryNames) {
                 Category c = new Category();
                 c.setTitle(name);
                 categoryMap.put(name, categoryRepository.save(c));
             }
 
-            categoryRepository.flush();   // 🔥 ensures DB commit
+            categoryRepository.flush();
 
             List<Product> products = new ArrayList<>();
 
@@ -72,7 +72,7 @@ public class DataLoader {
 
             productRepository.saveAll(products);
 
-            System.out.println("✅ Seed data inserted successfully!");
+            System.out.println("Seed data inserted successfully!");
         };
     }
 }
