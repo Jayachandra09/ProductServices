@@ -55,7 +55,8 @@ public class SelfProductService implements ProductService{
             Category newCategory = new Category();
             newCategory.setTitle(category);
 //            categoryFromDatabase = categoryRepository.save(newCategory);
-            categoryFromDatabase = newCategory;
+//            categoryFromDatabase = newCategory;
+            categoryFromDatabase = categoryRepository.save(newCategory);
         }
 //        If category ID is found in db -> category1 will be having ID
 //        else: category1 won't have ID

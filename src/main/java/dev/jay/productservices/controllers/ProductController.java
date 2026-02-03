@@ -8,6 +8,9 @@ import dev.jay.productservices.models.Category;
 import dev.jay.productservices.models.Product;
 import dev.jay.productservices.services.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -30,6 +33,7 @@ public class ProductController {
         this.restTemplate = restTemplate;
     }
 
+    @CachePut(value = "product", key="#result.id", unless = "#result.category == null ")
     @PostMapping("/products")
     public Product createProduct(@RequestBody CreateProductRequestDto request) {
         return productService.createProduct(
@@ -41,12 +45,13 @@ public class ProductController {
         );
     }
 
+    @Cacheable(value = "product")
     @GetMapping("/products/{id}")
     public Product getProductDetails(@PathVariable("id") Long productId) throws ProductNotFoundException {
         return productService.getSingleProduct(productId);
     }
 
-
+//    @Cacheable(value = "products")
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getProducts() {
 
@@ -60,13 +65,13 @@ public class ProductController {
         return response;
     }
 
-
+//    @Cacheable(value = "products")
     @GetMapping("/products/categories")
     public List<Category> getCategories() {
         return productService.getCategories();
     }
 
-
+    @CachePut(value = "product", key = "#result.id", unless = "#result.category == null")
     @PutMapping("/products/{id}")
     public Product updateProduct(@PathVariable("id") Long productId,
                                  @RequestBody UpdateProductRequestDto request) {
@@ -81,13 +86,13 @@ public class ProductController {
         );
     }
 
-
+    @CacheEvict(value = "product", key = "#result.id")
     @DeleteMapping("/products/{id}")
     public Product deleteProduct(@PathVariable("id") Long productId) {
         return productService.deleteProduct(productId);
     }
 
-
+//    @Cacheable(value = "products")
     @GetMapping("/products/category/{categoryName}")
     public List<Product> getProductsByCategory(@PathVariable("categoryName") String categoryName) {
         return productService.getProductByCategory(categoryName);
@@ -129,4 +134,19 @@ public class ProductController {
         Page<Product> productsByPageSortByPrice = productService.getProductByPagination(pageSize, pageNumber, "price");
         return ResponseEntity.ok(productsByPageSortByPrice.getContent());
     }
+
+    @GetMapping("/productsByTitle/{pageSize}/{pageNumber}")
+    public ResponseEntity getProductsByPageSortByTitle(@PathVariable("pageSize") int pageSize,
+                                                       @PathVariable("pageNumber") int pageNumber) {
+        Page<Product> productsByPageSortByTitle = productService.getProductByPagination(pageSize, pageNumber, "title");
+        return ResponseEntity.ok(productsByPageSortByTitle.getContent());
+    }
+
+    @GetMapping("/productsByCategory/{pageSize}/{pageNumber}")
+    public ResponseEntity getProductsByPageSortByCategory(@PathVariable("pageSize") int pageSize,
+                                                          @PathVariable("pageNumber") int pageNumber) {
+        Page<Product> productsByPageSortBycategory = productService.getProductByPagination(pageSize, pageNumber, "category_id");
+        return ResponseEntity.ok(productsByPageSortBycategory.getContent());
+    }
+
 }

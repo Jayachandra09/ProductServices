@@ -1,0 +1,21 @@
+Redis commands
+
+redis-cli info stats | grep 'keyspace_*'  ->  This command shows no. of cache hits and cache missed
+redis-cli keys '*'  ->  Get information for all cache keys
+redis-cli FLUSHDB  ->  clear your cache
+docs - https://medium.com/@MatthewFTech/spring-boot-cache-with-redis-56026f7da83a
+
+
+Corn
+
+Scheduling Format  ->  6 stars represent 6 different things
+*      *     *      *      *        *
+Sec   Min   Hour   Day   Month   DayOfTheWeek
+
+0  0  9  *  *  *  -> Everyday at 9AM
+0  30  9  *  *  *  -> Everyday at 9:30AM
+0  30  9  *  *  1  -> Every Monday[1] at 9:30AM
+
+*  *  *  *  *  *  -> Run every second post deployment
+0  *  *  *  *  *  -> Run every Minute post deployment
+0  0  *  *  *  *  -> Run every hour post deployment
