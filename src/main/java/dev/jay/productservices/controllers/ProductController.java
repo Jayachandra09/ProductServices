@@ -1,7 +1,6 @@
 package dev.jay.productservices.controllers;
 
 import dev.jay.productservices.dtos.CreateProductRequestDto;
-import dev.jay.productservices.dtos.ErrorDto;
 import dev.jay.productservices.dtos.UpdateProductRequestDto;
 import dev.jay.productservices.exceptions.ProductNotFoundException;
 import dev.jay.productservices.models.Category;
@@ -13,19 +12,39 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 import java.util.List;
 
+
+/*
+ ======================================================
+ ProductController
+ ======================================================
+
+ Responsibilities:
+ - Expose REST APIs
+ - Delegate business logic to Service layer
+ - Handle Redis caching
+ - Provide pagination & sorting
+ - Support soft delete restore
+
+ NOTE:
+ Controller handles only HTTP concerns.
+ Business logic stays inside Service layer.
+*/
 @RestController
+@RequestMapping("/products") // 🔥 base path (clean URLs)
+@Tag(name = "Products", description = "Product management APIs")
 public class ProductController {
 
-    private ProductService productService;
-
-    private RestTemplate restTemplate;
+    private final ProductService productService;
+    private final RestTemplate restTemplate;
 
     public ProductController(@Qualifier("selfProductService") ProductService productService,
                              RestTemplate restTemplate) {
@@ -33,9 +52,24 @@ public class ProductController {
         this.restTemplate = restTemplate;
     }
 
-    @CachePut(value = "product", key="#result.id", unless = "#result.category == null ")
-    @PostMapping("/products")
+
+
+    /*
+     ======================================================
+     CREATE
+     ======================================================
+     */
+
+    /*
+     CachePut:
+     After creation, store product in Redis cache.
+     #result refers to returned Product.
+     */
+    @CachePut(value = "product", key = "#result.id", unless = "#result.category == null")
+    @Operation(summary = "Create new product")
+    @PostMapping
     public Product createProduct(@RequestBody CreateProductRequestDto request) {
+
         return productService.createProduct(
                 request.getTitle(),
                 request.getDescription(),
@@ -45,39 +79,70 @@ public class ProductController {
         );
     }
 
-    @Cacheable(value = "product")
-    @GetMapping("/products/{id}")
-    public Product getProductDetails(@PathVariable("id") Long productId) throws ProductNotFoundException {
+
+
+    /*
+     ======================================================
+     READ
+     ======================================================
+     */
+
+    /*
+     Fetch single product by id.
+
+     Cacheable:
+     First request → DB
+     Next requests → Redis
+     */
+    @Cacheable(value = "product", key = "#productId")
+    @Operation(summary = "Get Details of a Product by it's Id")
+    @GetMapping("/{id}")
+    public Product getProductDetails(@PathVariable Long productId)
+            throws ProductNotFoundException {
+
         return productService.getSingleProduct(productId);
     }
 
-//    @Cacheable(value = "products")
-    @GetMapping("/products")
+
+    /*
+     Fetch all active products.
+     */
+    @Operation(summary = "Get all Products")
+    @GetMapping
     public ResponseEntity<List<Product>> getProducts() {
-
-        List<Product> products = productService.getProducts();
-
-//        Manually throwing error
-//        throw new RuntimeException();
-//         HttpStatus.NOT_FOUND -> Manually changing the 200 response to show it as 404 by using ResponseEntity
-        ResponseEntity<List<Product>> response= new ResponseEntity<>(products, HttpStatus.OK);
-
-        return response;
+        return ResponseEntity.ok(productService.getProducts());
     }
 
-//    @Cacheable(value = "products")
-    @GetMapping("/products/categories")
+
+    /*
+     Fetch all categories.
+     */
+    @Operation(summary = "Get all Categories")
+    @GetMapping("/categories")
     public List<Category> getCategories() {
         return productService.getCategories();
     }
 
+
+
+    /*
+     ======================================================
+     UPDATE
+     ======================================================
+     */
+
+    /*
+     CachePut:
+     Refresh cache after update.
+     */
     @CachePut(value = "product", key = "#result.id", unless = "#result.category == null")
-    @PutMapping("/products/{id}")
-    public Product updateProduct(@PathVariable("id") Long productId,
+    @Operation(summary = "Update a Product by Id")
+    @PutMapping("/{id}")
+    public Product updateProduct(@PathVariable Long id,
                                  @RequestBody UpdateProductRequestDto request) {
 
         return productService.updateProduct(
-                productId,
+                id,
                 request.getTitle(),
                 request.getDescription(),
                 request.getPrice(),
@@ -86,67 +151,79 @@ public class ProductController {
         );
     }
 
+
+
+    /*
+     ======================================================
+     DELETE (SOFT DELETE)
+     ======================================================
+
+     CacheEvict:
+     Remove product from Redis after deletion.
+     */
     @CacheEvict(value = "product", key = "#result.id")
-    @DeleteMapping("/products/{id}")
-    public Product deleteProduct(@PathVariable("id") Long productId) {
-        return productService.deleteProduct(productId);
+    @Operation(summary = "Delete a product")
+    @DeleteMapping("/{id}")
+    public Product deleteProduct(@PathVariable Long id) {
+        return productService.deleteProduct(id);
     }
 
-//    @Cacheable(value = "products")
-    @GetMapping("/products/category/{categoryName}")
-    public List<Product> getProductsByCategory(@PathVariable("categoryName") String categoryName) {
+
+
+    /*
+     ======================================================
+     FILTER
+     ======================================================
+     */
+
+    /*
+     Fetch products by category.
+     */
+    @Operation(summary = "Get Product by Category name")
+    @GetMapping("/category/{categoryName}")
+    public List<Product> getProductsByCategory(@PathVariable String categoryName) {
         return productService.getProductByCategory(categoryName);
     }
 
 
-////    Creating function for Product not found exception
-////    If this controller ever throws a ProductNotFound exception for any reason don't throw the exception as it is
-////    (Controller Advice) this is not a good method to show the exception to client...Java will throw the all the reson for exception
-////    Instead we are calling this method to what actually we want to show the exception
-//    @ExceptionHandler(ProductNotFoundException.class)
-//    public ResponseEntity<ErrorDto> handleProductNotFoundException(ProductNotFoundException exception) {
-//
-//        ErrorDto errorDto = new ErrorDto();
-//        errorDto.setMessage(exception.getMessage());
-//
-//        return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
-//    }
-//    For Best practices we are creating advices moving code to there
 
+    /*
+     ======================================================
+     PAGINATION & SORTING (INDUSTRY STYLE)
+     ======================================================
 
+     Example:
+     /products/paginated?page=0&size=10&sort=price
+     */
 
-//    -----------------------------
-//    Pagination and Sorting
-//    _______________________________
-    @GetMapping("/products/{pageSize}/{pageNumber}")
-    public ResponseEntity getProductsByPage(@PathVariable("pageSize") int pageSize,
-                                            @PathVariable("pageNumber") int pageNumber) {
+    @Operation(summary = "Get products with pagination")
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<Product>> getProductsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
 
-        Page<Product> productsByPage = productService.getProductByPagination(pageSize, pageNumber, null);
-        return ResponseEntity.ok(productsByPage.getContent());
+        Page<Product> result =
+                productService.getProductByPagination(size, page, sort);
+
+        return ResponseEntity.ok(result);
     }
 
 
-    @GetMapping("/productsByPrice/{pageSize}/{pageNumber}")
-    public ResponseEntity getProductsByPageSortByPrice(@PathVariable("pageSize") int pageSize,
-                                            @PathVariable("pageNumber") int pageNumber) {
 
-        Page<Product> productsByPageSortByPrice = productService.getProductByPagination(pageSize, pageNumber, "price");
-        return ResponseEntity.ok(productsByPageSortByPrice.getContent());
+    /*
+     ======================================================
+     RESTORE (SOFT DELETE RECOVERY)
+     ======================================================
+     */
+
+    /*
+     Restores a soft deleted product.
+     Sets is_deleted = false.
+     */
+    @Operation(summary = "Restore the products by Id")
+    @PutMapping("/restore/{id}")
+    public Product restoreProduct(@PathVariable Long id) {
+        return productService.restoreProduct(id);
     }
-
-    @GetMapping("/productsByTitle/{pageSize}/{pageNumber}")
-    public ResponseEntity getProductsByPageSortByTitle(@PathVariable("pageSize") int pageSize,
-                                                       @PathVariable("pageNumber") int pageNumber) {
-        Page<Product> productsByPageSortByTitle = productService.getProductByPagination(pageSize, pageNumber, "title");
-        return ResponseEntity.ok(productsByPageSortByTitle.getContent());
-    }
-
-    @GetMapping("/productsByCategory/{pageSize}/{pageNumber}")
-    public ResponseEntity getProductsByPageSortByCategory(@PathVariable("pageSize") int pageSize,
-                                                          @PathVariable("pageNumber") int pageNumber) {
-        Page<Product> productsByPageSortBycategory = productService.getProductByPagination(pageSize, pageNumber, "category_id");
-        return ResponseEntity.ok(productsByPageSortBycategory.getContent());
-    }
-
 }

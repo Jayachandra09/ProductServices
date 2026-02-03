@@ -1,14 +1,13 @@
 package dev.jay.productservices.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.List;
 
@@ -17,13 +16,34 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+
+// Soft delete for category
+// DELETE will become UPDATE is_deleted = true
+@SQLDelete(sql = "UPDATE category SET is_deleted = true WHERE id=?")
+
+// Hide deleted categories automatically
+@Where(clause = "is_deleted = false")
 public class Category extends BaseModel {
+
     private String title;
 
-//    REMOVE used if a person deletes the category it will also the delete the products related to it.
-//    by default for OneToMany fetch type will be lazy this means no join will be executed until unless we trigger it to execute.
-//    I'm making it to eager fetch type from JPA Buddy
-    @OneToMany(fetch = jakarta.persistence.FetchType.EAGER, mappedBy = "category", cascade = CascadeType.REMOVE)
+
+    /*
+     CascadeType.REMOVE:
+     If a category is deleted, all its related products will also be deleted.
+
+     Since we are now using soft delete,
+     Hibernate will mark them as is_deleted = true instead of physically deleting.
+
+     FetchType.EAGER:
+     Products are loaded immediately when category is fetched.
+     (Use LAZY in large-scale systems for better performance)
+    */
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "category",
+            cascade = CascadeType.REMOVE
+    )
     @JsonIgnore
     private List<Product> products;
 }

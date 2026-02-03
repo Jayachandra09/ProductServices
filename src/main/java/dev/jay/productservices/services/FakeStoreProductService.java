@@ -175,4 +175,9 @@ public class FakeStoreProductService implements ProductService{
     public Page<Product> getProductByPagination(Integer pageSize, Integer pageNumber, String sort) {
         return null;
     }
+
+    @Override
+    public Product restoreProduct(Long id) {
+        return null;
+    }
 }

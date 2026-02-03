@@ -36,4 +36,6 @@ public interface ProductService {
     List<Product> getProductByCategory(String category);
 
     Page<Product> getProductByPagination(Integer pageSize, Integer pageNumber, String sort);
+
+    Product restoreProduct(Long id);
 }

@@ -5,26 +5,52 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Product extends BaseModel{
+
+// Soft delete:
+// Instead of physically deleting the record from DB,
+// Hibernate will update is_deleted = true
+@SQLDelete(sql = "UPDATE product SET is_deleted = true WHERE id=?")
+
+// Automatically filters deleted rows in ALL queries
+// SELECT * FROM product WHERE is_deleted = false
+@Where(clause = "is_deleted = false")
+public class Product extends BaseModel {
+
     private String title;
+
     private String description;
+
     private double price;
+
     private String imageUrl;
 
-//    CascadeType.PERSIST is used for when a person is adding a product with a category id
-//    If that category does not exist in category table it will throw to user to add a category first and then product
-    @ManyToOne
+
+    /*
+     CascadeType.PERSIST:
+     If a new product is created with a category that does not exist,
+     Hibernate will first persist the category automatically.
+
+     If the category already exists, it will simply associate it.
+
+     This prevents foreign key violations while creating products.
+    */
+    @ManyToOne(cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "category_id")
     private Category category;
 
-//    For Version management of DB I'm adding this
-//    private int quantity;
+
+    /*
+     Future enhancement:
+     You can add quantity/stock fields for inventory management.
+     Example:
+     private int quantity;
+    */
 }

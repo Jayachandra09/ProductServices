@@ -152,6 +152,14 @@ PREVIOUS POM (BACKUP)
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
+        <!-- Swagger / OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
