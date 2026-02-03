@@ -84,4 +84,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("select p.id as id, p.title as title from Product p where p.category.id = :categoryId")
     List<ProductProjection> getTitlesOfProductForGivenCategory(@Param("categoryId") Long categoryId);
+
+
+//    For corn
+    @Query("SELECT AVG(p.price) FROM Product p")
+    Double findAveragePrice();
 }
