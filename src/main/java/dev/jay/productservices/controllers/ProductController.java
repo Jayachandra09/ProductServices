@@ -97,7 +97,7 @@ public class ProductController {
     @Cacheable(value = "product", key = "#productId")
     @Operation(summary = "Get Details of a Product by it's Id")
     @GetMapping("/{id}")
-    public Product getProductDetails(@PathVariable Long productId)
+    public Product getProductDetails(@PathVariable("id") Long productId)
             throws ProductNotFoundException {
 
         return productService.getSingleProduct(productId);
